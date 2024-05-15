@@ -1,4 +1,4 @@
-package com.example.simpyo.API
+package com.example.simpyo.api
 
 import com.google.gson.GsonBuilder
 

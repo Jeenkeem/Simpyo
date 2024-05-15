@@ -1,4 +1,4 @@
-package com.example.simpyo.API
+package com.example.simpyo.dataclasses
 
 import com.google.gson.annotations.SerializedName
 
