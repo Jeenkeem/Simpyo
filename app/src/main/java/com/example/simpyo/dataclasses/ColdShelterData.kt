@@ -25,12 +25,12 @@ data class ColdShelterData (
     val holiday_open : String?,
     @SerializedName("chk9_yn")
     val accom_available : String?,
-    @SerializedName("dt_start")
+    @SerializedName("c_dt_strt")
     val start_date : String?,
-    @SerializedName("dt_end")
+    @SerializedName("c_dt_end")
     val end_date : String?,
-    @SerializedName("xx")
+    @SerializedName("g2_xmin")
     val x_coor : Double?,
-    @SerializedName("yy")
+    @SerializedName("g2_ymin")
     val y_coor : Double?
 )

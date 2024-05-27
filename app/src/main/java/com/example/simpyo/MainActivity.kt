@@ -3,6 +3,7 @@ package com.example.simpyo
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import com.example.simpyo.maps.ColdShelterMarker
 import com.example.simpyo.maps.HeatShelterMarker
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.geometry.LatLngBounds
@@ -14,7 +15,8 @@ import kotlin.math.pow
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var naverMap: NaverMap
-    private val markers = mutableListOf<Marker>()
+    private val heatShelterMarkers = mutableListOf<Marker>()
+    private val coldShelterMarkers = mutableListOf<Marker>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +39,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             heatShelterMarker?.forEach { marker ->
                 if (marker.position.isValid) {
                     marker.map = null // 모든 마커 숨기기
-                    markers.add(marker)
+                    heatShelterMarkers.add(marker)
+                }
+            }
+            updateMarkers()
+        }
+
+        ColdShelterMarker(this).getColdShelterMarker { coldShelterMarker ->
+            coldShelterMarker?.forEach { marker ->
+                if (marker.position.isValid) {
+                    marker.map = null // 모든 마커 숨기기
+                    coldShelterMarkers.add(marker)
                 }
             }
             updateMarkers()
@@ -52,7 +64,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         val cameraPosition = naverMap.cameraPosition
         val mapBounds = getBounds(cameraPosition.target, cameraPosition.zoom)
 
-        markers.forEach { marker ->
+        heatShelterMarkers.forEach { marker ->
+            val position = marker.position
+            val shouldBeVisible = mapBounds.contains(position)
+
+            if (shouldBeVisible && marker.map == null) {
+                marker.map = naverMap
+            }
+
+            else if (!shouldBeVisible && marker.map != null) {
+                marker.map = null
+            }
+        }
+
+        coldShelterMarkers.forEach { marker ->
             val position = marker.position
             val shouldBeVisible = mapBounds.contains(position)
 
