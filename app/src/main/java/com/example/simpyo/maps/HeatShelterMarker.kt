@@ -2,11 +2,19 @@ package com.example.simpyo.maps
 
 import android.content.ContentValues.TAG
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Geocoder
 import android.util.Log
+import com.example.simpyo.R
 import com.example.simpyo.simpyoAPI.HeatShelterList
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.overlay.Marker
+import com.naver.maps.map.overlay.OverlayImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.util.Locale
 
 class HeatShelterMarker(private val context: Context) {
@@ -23,44 +31,66 @@ class HeatShelterMarker(private val context: Context) {
 
             val heatShelterMarker = Array(heatShelterList.size) { Marker() }
 
-            heatShelterList.forEachIndexed { index, heatShelter ->
-                val latLng = heatShelter.shelter_add?.let { getLatLng(it) }
+            runBlocking {
+                for ((index, heatShelter) in heatShelterList.withIndex()) {
+                    val addr = heatShelter.shelter_add
 
-                if (latLng != null && latLng.isValid) {
-                    heatShelterMarker[index].position = latLng
+                    if (addr != null) {
+                        val latLng = getLatLngAsync(addr)
+
+                        if (latLng != null && latLng.isValid) {
+                            heatShelterMarker[index].position = latLng
+                            val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.simpyo_marker)
+                            val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 34, 48, false)
+                            heatShelterMarker[index].icon = OverlayImage.fromBitmap(resizedBitmap)
+                        }
+
+                        else {
+                            Log.w(TAG, "Invalid LatLng for address: $addr")
+                        }
+                    }
+
+                    else {
+                        Log.w(TAG, "Address is null for HeatShelter at index $index")
+                    }
+
+                    Log.d(TAG, "Marker set : ${heatShelterMarker[index].position}")
                 }
-
-                Log.d(TAG, "Marker set : ${heatShelterMarker[index].position}")
             }
 
             callback(heatShelterMarker)
         }
     }
 
-    fun getLatLng(addr: String): LatLng? {
-        var latLng: LatLng? = null
 
-        val result = runCatching {
-            geocoder.getFromLocationName(addr, 1)
-        }
+    private suspend fun getLatLngAsync(addr: String): LatLng? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val addresses = geocoder.getFromLocationName(addr, 1)
 
-        result.onSuccess { addresses ->
-            if(addresses != null) {
-                val address = addresses[0]
-                val lat = address.latitude
-                val lng = address.longitude
+                if (addresses != null && addresses.isNotEmpty()) {
+                    val address = addresses[0]
+                    val lat = address.latitude
+                    val lng = address.longitude
 
-                if (lat.isNaN() || lng.isNaN()) {
-                    Log.w(TAG, "Invalid LatLng for address: $addr")
-                    latLng = null
+                    if (lat.isNaN() || lng.isNaN()) {
+                        Log.w(TAG, "Invalid LatLng for address: $addr")
+                        null
+                    }
+
+                    else {
+                        LatLng(lat, lng)
+                    }
                 }
 
                 else {
-                    latLng = LatLng(lat, lng)
+                    Log.w(TAG, "No address found for: $addr")
+                    null
                 }
+            } catch (e: IOException) {
+                Log.e(TAG, "Error getting LatLng from address: $addr", e)
+                null
             }
         }
-
-        return latLng
     }
 }
