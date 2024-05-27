@@ -1,17 +1,20 @@
 package com.example.simpyo
 
-import android.content.ContentValues.TAG
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.example.simpyo.maps.HeatShelterMarker
+import com.naver.maps.geometry.LatLng
+import com.naver.maps.geometry.LatLngBounds
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
+import com.naver.maps.map.overlay.Marker
+import kotlin.math.pow
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
-    private var naverMap: NaverMap? = null
+    private lateinit var naverMap: NaverMap
+    private val markers = mutableListOf<Marker>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,18 +34,44 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         this.naverMap = naverMap
 
         HeatShelterMarker(this).getHeatShelterMarker { heatShelterMarker ->
-            if(heatShelterMarker != null) {
-                for(marker in heatShelterMarker) {
-                    if(marker.position.isValid)
-                        marker.map = this.naverMap
+            heatShelterMarker?.forEach { marker ->
+                if (marker.position.isValid) {
+                    marker.map = null // 모든 마커 숨기기
+                    markers.add(marker)
                 }
             }
+            updateMarkers()
+        }
 
-            else {
-                Log.d(TAG, "Log.d(ContentValues.TAG, \"HeatShelterMarker array is null\")")
+        naverMap.addOnCameraIdleListener {
+            updateMarkers()
+        }
+    }
+
+    private fun updateMarkers() {
+        val cameraPosition = naverMap.cameraPosition
+        val mapBounds = getBounds(cameraPosition.target, cameraPosition.zoom)
+
+        markers.forEach { marker ->
+            val position = marker.position
+            val shouldBeVisible = mapBounds.contains(position)
+
+            if (shouldBeVisible && marker.map == null) {
+                marker.map = naverMap
+            }
+
+            else if (!shouldBeVisible && marker.map != null) {
+                marker.map = null
             }
         }
     }
 
+    private fun getBounds(center: LatLng, zoom: Double): LatLngBounds {
+        val widthInMeters = 1000 * 2.0.pow(21 - zoom)
+        val offset = widthInMeters / 2
+        val southWest = LatLng(center.latitude - offset, center.longitude - offset)
+        val northEast = LatLng(center.latitude + offset, center.longitude + offset)
 
+        return LatLngBounds(southWest, northEast)
+    }
 }
