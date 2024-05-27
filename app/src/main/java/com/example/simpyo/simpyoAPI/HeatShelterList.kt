@@ -1,4 +1,4 @@
-package com.example.simpyo.api
+package com.example.simpyo.simpyoAPI
 
 import retrofit2.Call
 import retrofit2.Callback

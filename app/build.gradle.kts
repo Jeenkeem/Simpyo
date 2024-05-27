@@ -53,4 +53,7 @@ dependencies {
     implementation("com.squareup.retrofit2:adapter-rxjava:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.retrofit2:converter-scalars:2.11.0")
+
+    //Splash
+    implementation ("androidx.core:core-splashscreen:1.0.1")
 }
