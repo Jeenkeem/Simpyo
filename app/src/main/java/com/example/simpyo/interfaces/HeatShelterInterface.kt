@@ -5,6 +5,6 @@ import retrofit2.Call
 import retrofit2.http.GET
 
 interface HeatShelterInterface {
-    @GET("getHeatShelter.php")
+    @GET("getHeatTest.php")
     fun requestHeatShelterData(): Call<List<HeatShelterData>>
 }
