@@ -29,9 +29,11 @@ class HeatShelterMarker(private val context: Context) {
                     val latLng = LatLng(heatShelter.x_coor!!, heatShelter.y_coor!!)
 
                     heatShelterMarker[index].position = latLng
+                    /*
                     val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.simpyo_marker)
                     val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 170, 240, false)
                     heatShelterMarker[index].icon = OverlayImage.fromBitmap(resizedBitmap)
+                    */
 
                     Log.d(TAG, "Marker set : ${heatShelterMarker[index].position}")
                 }
