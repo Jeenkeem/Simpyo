@@ -56,4 +56,7 @@ dependencies {
 
     //Splash
     implementation ("androidx.core:core-splashscreen:1.0.1")
+
+    // 현위치
+    implementation ("com.google.android.gms:play-services-location:21.2.0")
 }
