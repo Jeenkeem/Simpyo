@@ -29,4 +29,28 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
+    <ImageButton
+        android:id="@+id/heatShelterButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/circle_button"
+        android:src="@drawable/simpyo_sun_icon"
+        android:layout_margin="16dp"
+        android:padding="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/coldShelterButton"
+        app:layout_constraintStart_toStartOf="parent"
+        android:scaleType="centerInside"/>
+
+    <ImageButton
+        android:id="@+id/coldShelterButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/circle_button"
+        android:src="@drawable/simpyo_snow_icon"
+        android:layout_margin="16dp"
+        android:padding="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:scaleType="centerInside"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

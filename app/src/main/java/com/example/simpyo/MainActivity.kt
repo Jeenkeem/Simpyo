@@ -4,6 +4,9 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.example.simpyo.maps.ColdShelterMarker
@@ -33,7 +36,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private val heatShelterMarkers = mutableListOf<Marker>()
     private val coldShelterMarkers = mutableListOf<Marker>()
     private val builder: Clusterer.Builder<ShelterKey> = Clusterer.Builder<ShelterKey>()
-    private val clusterer: Clusterer<ShelterKey>
+    private val heatShelterClusterer: Clusterer<ShelterKey>
+    private val coldShelterClusterer: Clusterer<ShelterKey>
 
     init {
         builder.clusterMarkerUpdater(object : DefaultClusterMarkerUpdater() {
@@ -67,7 +71,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
 
-        clusterer = builder.build()
+        heatShelterClusterer = builder.build()
+        coldShelterClusterer = builder.build()
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,18 +86,35 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
         mapFragment.getMapAsync(this)
+
+        val heatShelterButton: ImageButton = findViewById(R.id.heatShelterButton)
+        heatShelterButton.setOnClickListener {
+            heatShelterClusterer.map = naverMap
+            coldShelterClusterer.map = null
+
+            Toast.makeText(this, "무더위 쉼터", Toast.LENGTH_SHORT).show()
+        }
+
+        val coldShelterButton: ImageButton = findViewById(R.id.coldShelterButton)
+        coldShelterButton.setOnClickListener {
+            heatShelterClusterer.map = null
+            coldShelterClusterer.map = naverMap
+
+            Toast.makeText(this, "한파 쉼터", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onMapReady(naverMap: NaverMap) {
         this.naverMap = naverMap
-        clusterer.map = naverMap
+        heatShelterClusterer.map = null
+        coldShelterClusterer.map = null
 
         HeatShelterMarker(this).getHeatShelterMarker { heatShelterMarker ->
             heatShelterMarker?.forEachIndexed { index, marker ->
                 if (marker.position.isValid) {
                     marker.map = null // 모든 마커 숨기기
                     heatShelterMarkers.add(marker)
-                    clusterer.add(ShelterKey(index, marker.position), null)
+                    heatShelterClusterer.add(ShelterKey(index, marker.position), null)
                 }
             }
             //updateMarkers()
@@ -103,7 +125,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (marker.position.isValid) {
                     marker.map = null // 모든 마커 숨기기
                     coldShelterMarkers.add(marker)
-                    clusterer.add(ShelterKey(index, marker.position), null)
+                    coldShelterClusterer.add(ShelterKey(index, marker.position), null)
                 }
             }
             //updateMarkers()
