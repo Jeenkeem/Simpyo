@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
                 marker.icon = OverlayImage.fromBitmap(resizedBitmap)
                 marker.captionTextSize = 25f
-                marker.captionColor = Color.rgb(100, 12, 12)
+                marker.captionColor = Color.rgb(100, 149, 237)
                 marker.captionText = info.size.toString()
                 /*
                 marker.icon = if(info.size < 3) {
