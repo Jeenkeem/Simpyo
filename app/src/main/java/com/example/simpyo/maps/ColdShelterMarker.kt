@@ -2,14 +2,10 @@ package com.example.simpyo.maps
 
 import android.content.ContentValues.TAG
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Log
-import com.example.simpyo.R
 import com.example.simpyo.simpyoAPI.ColdShelterList
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.overlay.Marker
-import com.naver.maps.map.overlay.OverlayImage
 import kotlinx.coroutines.runBlocking
 
 class ColdShelterMarker(private val context: Context) {

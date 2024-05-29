@@ -6,6 +6,11 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -15,8 +20,7 @@ import androidx.core.content.ContextCompat
 import com.example.simpyo.maps.ColdShelterMarker
 import com.example.simpyo.maps.HeatShelterMarker
 import com.example.simpyo.maps.ShelterKey
-import com.naver.maps.geometry.LatLng
-import com.naver.maps.geometry.LatLngBounds
+import com.example.simpyo.simpyoAPI.HeatShelterList
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
@@ -29,13 +33,12 @@ import com.naver.maps.map.clustering.LeafMarkerInfo
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.util.FusedLocationSource
-import kotlin.math.pow
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var naverMap: NaverMap
 
-    private val heatShelterMarkers = mutableListOf<Marker>()
-    private val coldShelterMarkers = mutableListOf<Marker>()
+    //private val heatShelterMarkers = mutableListOf<Marker>()
+    //private val coldShelterMarkers = mutableListOf<Marker>()
 
     private val builder: Clusterer.Builder<ShelterKey> = Clusterer.Builder<ShelterKey>()
     private val heatShelterClusterer: Clusterer<ShelterKey>
@@ -55,15 +58,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 marker.captionTextSize = 25f
                 marker.captionColor = Color.rgb(100, 149, 237)
                 marker.captionText = info.size.toString()
-                /*
-                marker.icon = if(info.size < 3) {
-                    MarkerIcons.CLUSTER_LOW_DENSITY
-                }
-
-                else {
-                    MarkerIcons.CLUSTER_MEDIUM_DENSITY
-                }
-                */
             }
         }).leafMarkerUpdater(object : DefaultLeafMarkerUpdater() {
             override fun updateLeafMarker(info: LeafMarkerInfo, marker: Marker) {
@@ -112,14 +106,64 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val currentLocationButton: ImageButton = findViewById(R.id.currentLocationButton)
         currentLocationButton.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 naverMap.locationTrackingMode = LocationTrackingMode.Follow
             } else {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    LOCATION_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
+
+// AutoCompleteTextView와 버튼 설정
+        val searchShelter: AutoCompleteTextView = findViewById(R.id.searchShelter)
+        val searchButton: Button = findViewById(R.id.searchButton)
+
+        // HeatShelterList를 통해 데이터 가져오기
+        val heatShelterList = HeatShelterList()
+        heatShelterList.getHeatShelterList { shelterDataList ->
+            val heatShelterNames = shelterDataList?.map { it.shelter_name } ?: listOf()
+            val adapter =
+                ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, heatShelterNames)
+            searchShelter.setAdapter(adapter)
+
+            // TextWatcher를 추가하여 사용자가 입력할 때 자동완성 기능을 작동시키도록 함
+            searchShelter.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    adapter.filter.filter(s)
+                }
+
+                override fun afterTextChanged(s: Editable?) {}
+            })
+
+            // 검색 버튼 클릭 이벤트 설정
+            searchButton.setOnClickListener {
+                val query = searchShelter.text.toString()
+                if (query.isNotEmpty()) {
+                    searchForShelter(query)
+                }
             }
         }
     }
 
+    private fun searchForShelter(query: String) {
+        // 여기에 검색 로직 추가
+        Toast.makeText(this, "Searching for: $query", Toast.LENGTH_SHORT).show()
+    }
     override fun onMapReady(naverMap: NaverMap) {
         this.naverMap = naverMap
 
@@ -138,26 +182,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             heatShelterMarker?.forEachIndexed { index, marker ->
                 if (marker.position.isValid) {
                     marker.map = null // 모든 마커 숨기기
-                    heatShelterMarkers.add(marker)
+                    //heatShelterMarkers.add(marker)
                     heatShelterClusterer.add(ShelterKey(index, marker.position), null)
                 }
             }
-            //updateMarkers()
         }
 
         ColdShelterMarker(this).getColdShelterMarker { coldShelterMarker ->
             coldShelterMarker?.forEachIndexed { index, marker ->
                 if (marker.position.isValid) {
                     marker.map = null // 모든 마커 숨기기
-                    coldShelterMarkers.add(marker)
+                    //coldShelterMarkers.add(marker)
                     coldShelterClusterer.add(ShelterKey(index, marker.position), null)
                 }
             }
-            //updateMarkers()
-        }
-
-        naverMap.addOnCameraIdleListener {
-            //updateMarkers()
         }
     }
 
@@ -168,48 +206,5 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 naverMap.locationTrackingMode = LocationTrackingMode.Follow
             }
         }
-    }
-
-    private fun updateMarkers() {
-        val cameraPosition = naverMap.cameraPosition
-        val mapBounds = getBounds(cameraPosition.target, cameraPosition.zoom)
-
-
-        /*
-        heatShelterMarkers.forEach { marker ->
-            val position = marker.position
-            val shouldBeVisible = mapBounds.contains(position)
-
-            if (shouldBeVisible && marker.map == null) {
-                marker.map = naverMap
-            }
-
-            else if (!shouldBeVisible && marker.map != null) {
-                marker.map = null
-            }
-        }
-
-        coldShelterMarkers.forEach { marker ->
-            val position = marker.position
-            val shouldBeVisible = mapBounds.contains(position)
-
-            if (shouldBeVisible && marker.map == null) {
-                marker.map = naverMap
-            }
-
-            else if (!shouldBeVisible && marker.map != null) {
-                marker.map = null
-            }
-        }
-        */
-    }
-
-    private fun getBounds(center: LatLng, zoom: Double): LatLngBounds {
-        val widthInMeters = 1000 * 2.0.pow(21 - zoom)
-        val offset = widthInMeters / 2
-        val southWest = LatLng(center.latitude - offset, center.longitude - offset)
-        val northEast = LatLng(center.latitude + offset, center.longitude + offset)
-
-        return LatLngBounds(southWest, northEast)
     }
 }
