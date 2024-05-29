@@ -143,7 +143,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun updateSearchCategory() {
         // AutoCompleteTextView와 버튼 설정
         val searchShelter: AutoCompleteTextView = findViewById(R.id.searchShelter)
-        val searchButton: Button = findViewById(R.id.searchButton)
+        val searchButton: ImageButton = findViewById(R.id.searchButton)
 
         // 무더위 쉼터 검색
         if(shelterCategory == 1) {

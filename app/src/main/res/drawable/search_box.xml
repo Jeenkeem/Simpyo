@@ -3,22 +3,16 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true">
         <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-            <stroke
-                android:width="2dp"
-                android:color="#464DCF" />
-            <corners android:radius="4dp"/>
-            <solid
-                android:color="#FFFFFF" />
+            <stroke android:width="2dp" android:color="#464DCF" />
+            <corners android:radius="25dp"/>
+            <solid android:color="#FFFFFF" />
         </shape>
     </item>
     <item android:state_focused="false">
         <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-            <stroke
-                android:width="3dp"
-                android:color="#6495ED" />
-            <corners android:radius="4dp"/>
-            <solid
-                android:color="#FFFFFF" />
+            <stroke android:width="3dp" android:color="#6495ED" />
+            <corners android:radius="25dp"/>
+            <solid android:color="#FFFFFF" />
         </shape>
     </item>
 </selector>
