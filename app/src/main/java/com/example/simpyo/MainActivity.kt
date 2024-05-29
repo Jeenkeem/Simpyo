@@ -47,6 +47,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var locationSource: FusedLocationSource
     private val LOCATION_PERMISSION_REQUEST_CODE = 1000
 
+    private var shelterCategory = 0 // 0: 카테고리 미설정, 1: 무더위 쉼터, 2: 한파 쉼터
+
     init {
         builder.clusterMarkerUpdater(object : DefaultClusterMarkerUpdater() {
             override fun updateClusterMarker(info: ClusterMarkerInfo, marker: Marker) {
@@ -89,18 +91,27 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
         val heatShelterButton: ImageButton = findViewById(R.id.heatShelterButton)
+        val coldShelterButton: ImageButton = findViewById(R.id.coldShelterButton)
+
         heatShelterButton.setOnClickListener {
             heatShelterClusterer.map = naverMap
             coldShelterClusterer.map = null
+            shelterCategory = 1
+            updateSearchCategory()
 
+            heatShelterButton.isSelected = true
+            coldShelterButton.isSelected = false
             Toast.makeText(this, "무더위 쉼터", Toast.LENGTH_SHORT).show()
         }
 
-        val coldShelterButton: ImageButton = findViewById(R.id.coldShelterButton)
         coldShelterButton.setOnClickListener {
             heatShelterClusterer.map = null
             coldShelterClusterer.map = naverMap
+            shelterCategory = 2
+            updateSearchCategory()
 
+            coldShelterButton.isSelected = true
+            heatShelterButton.isSelected = false
             Toast.makeText(this, "한파 쉼터", Toast.LENGTH_SHORT).show()
         }
 
@@ -121,49 +132,78 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-// AutoCompleteTextView와 버튼 설정
-        val searchShelter: AutoCompleteTextView = findViewById(R.id.searchShelter)
-        val searchButton: Button = findViewById(R.id.searchButton)
-
-        // HeatShelterList를 통해 데이터 가져오기
-        val heatShelterList = HeatShelterList()
-        heatShelterList.getHeatShelterList { shelterDataList ->
-            val heatShelterNames = shelterDataList?.map { it.shelter_name } ?: listOf()
-            val adapter =
-                ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, heatShelterNames)
-            searchShelter.setAdapter(adapter)
-
-            // TextWatcher를 추가하여 사용자가 입력할 때 자동완성 기능을 작동시키도록 함
-            searchShelter.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int
-                ) {
-                }
-
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    adapter.filter.filter(s)
-                }
-
-                override fun afterTextChanged(s: Editable?) {}
-            })
-
-            // 검색 버튼 클릭 이벤트 설정
-            searchButton.setOnClickListener {
-                val query = searchShelter.text.toString()
-                if (query.isNotEmpty()) {
-                    searchForShelter(query)
-                }
-            }
-        }
+        updateSearchCategory()
     }
 
     private fun searchForShelter(query: String) {
         // 여기에 검색 로직 추가
         Toast.makeText(this, "Searching for: $query", Toast.LENGTH_SHORT).show()
     }
+
+    private fun updateSearchCategory() {
+        // AutoCompleteTextView와 버튼 설정
+        val searchShelter: AutoCompleteTextView = findViewById(R.id.searchShelter)
+        val searchButton: Button = findViewById(R.id.searchButton)
+
+        // 무더위 쉼터 검색
+        if(shelterCategory == 1) {
+            // HeatShelterList를 통해 데이터 가져오기
+            val heatShelterList = HeatShelterList()
+            heatShelterList.getHeatShelterList { shelterDataList ->
+                val heatShelterNames = shelterDataList?.map { it.shelter_name } ?: listOf()
+                val adapter =
+                    ArrayAdapter(
+                        this,
+                        android.R.layout.simple_dropdown_item_1line,
+                        heatShelterNames
+                    )
+                searchShelter.setAdapter(adapter)
+
+                // TextWatcher를 추가하여 사용자가 입력할 때 자동완성 기능을 작동시키도록 함
+                searchShelter.addTextChangedListener(object : TextWatcher {
+                    override fun beforeTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        count: Int,
+                        after: Int
+                    ) {
+                    }
+
+                    override fun onTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        before: Int,
+                        count: Int
+                    ) {
+                        adapter.filter.filter(s)
+                    }
+
+                    override fun afterTextChanged(s: Editable?) {}
+                })
+
+                // 검색 버튼 클릭 이벤트 설정
+                searchButton.setOnClickListener {
+                    val query = searchShelter.text.toString()
+                    if (query.isNotEmpty()) {
+                        searchForShelter(query)
+                    }
+                }
+            }
+        }
+
+        // 한파 쉼터 검색
+        else if(shelterCategory == 2) {
+
+        }
+
+        // 카테고리 미설정
+        else {
+            searchButton.setOnClickListener {
+                Toast.makeText(this, "카테고리 미설정", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     override fun onMapReady(naverMap: NaverMap) {
         this.naverMap = naverMap
 
