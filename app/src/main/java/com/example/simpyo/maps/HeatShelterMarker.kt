@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.Log
 import com.example.simpyo.simpyoAPI.HeatShelterList
 import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.overlay.InfoWindow
 import com.naver.maps.map.overlay.Marker
 import kotlinx.coroutines.runBlocking
 
