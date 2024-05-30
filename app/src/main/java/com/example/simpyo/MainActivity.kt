@@ -10,17 +10,21 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.simpyo.dataclasses.HeatShelterData
 import com.example.simpyo.maps.ColdShelterMarker
 import com.example.simpyo.maps.HeatShelterMarker
 import com.example.simpyo.maps.ShelterKey
 import com.example.simpyo.simpyoAPI.HeatShelterList
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.CameraAnimation
+import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
@@ -36,9 +40,6 @@ import com.naver.maps.map.util.FusedLocationSource
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var naverMap: NaverMap
-
-    //private val heatShelterMarkers = mutableListOf<Marker>()
-    //private val coldShelterMarkers = mutableListOf<Marker>()
 
     private val builder: Clusterer.Builder<ShelterKey> = Clusterer.Builder<ShelterKey>()
     private val heatShelterClusterer: Clusterer<ShelterKey>
@@ -135,9 +136,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         updateSearchCategory()
     }
 
-    private fun searchForShelter(query: String) {
+    private fun searchForShelter(query: String, heatShelterList: List<HeatShelterData>?) {
         // 여기에 검색 로직 추가
         Toast.makeText(this, "Searching for: $query", Toast.LENGTH_SHORT).show()
+
+        if (shelterCategory == 1) {
+            // for 문으로 검색한 쉼터 명칭과 일치하는 데이터를 찾음
+            heatShelterList?.forEach { shelterData ->
+                if (shelterData.shelter_name == query) {
+                    val cameraUpdate = CameraUpdate.scrollTo(LatLng(shelterData.x_coor!!, shelterData.y_coor!!))
+                    cameraUpdate.animate(CameraAnimation.Fly, 1500)
+                    naverMap.moveCamera(cameraUpdate)
+
+                    //displayShelterInfo(shelterData) // 일치하는 쉼터 정보를 슬라이딩 패널로 표시
+                }
+            }
+        }
     }
 
     private fun updateSearchCategory() {
@@ -185,7 +199,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 searchButton.setOnClickListener {
                     val query = searchShelter.text.toString()
                     if (query.isNotEmpty()) {
-                        searchForShelter(query)
+                        searchForShelter(query, shelterDataList)
                     }
                 }
             }
