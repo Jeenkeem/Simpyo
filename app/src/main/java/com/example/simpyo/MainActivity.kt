@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
                 marker.icon = OverlayImage.fromBitmap(resizedBitmap)
                 marker.captionTextSize = 25f
-                marker.captionColor = Color.rgb(100, 149, 237)
+                marker.captionColor = Color.WHITE
                 marker.captionText = info.size.toString()
             }
         }).leafMarkerUpdater(object : DefaultLeafMarkerUpdater() {
